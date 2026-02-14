@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Lectures</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body { font-family: Arial; background:#f4f6f9; text-align:center; }
+        .post { background:white; margin:15px; padding:15px; border-radius:10px; }
+    </style>
+</head>
+<body>
+
+<h1>Latest Lectures</h1>
+<div id="posts"></div>
+
+<script>
+const channelUsername = "PRIVATE KP";
+
+fetch(`https://api.rss2json.com/v1/api.json?rss_url=https://t.me/s/${channelUsername}`)
+.then(response => response.json())
+.then(data => {
+    data.items.forEach(item => {
+        const postDiv = document.createElement("div");
+        postDiv.className = "post";
+        postDiv.innerHTML = `
+            <h3>${item.title}</h3>
+            <p>${item.description}</p>
+            <a href="${item.link}" target="_blank">Open in Telegram</a>
+        `;
+        document.getElementById("posts").appendChild(postDiv);
+    });
+});
+</script>
+
+</body>
+</html>
