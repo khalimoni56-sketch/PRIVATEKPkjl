@@ -1,34 +1,676 @@
 
 <!DOCTYPE html>
-<html>
+<html lang="hi">
 <head>
-  <title>Private KP Lectures</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f4f6f9;
-      text-align: center;
-    }
-
-    h1 {
-      background: #0088cc;
-      color: white;
-      padding: 15px;
-      margin: 0;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF to Short Notes - AI Powered</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .main-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 60px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            background: #f8f9ff;
+        }
+        
+        .upload-area:hover {
+            background: #eef0ff;
+            border-color: #764ba2;
+        }
+        
+        .upload-area.dragover {
+            background: #e0e5ff;
+            border-color: #4c51bf;
+        }
+        
+        .upload-icon {
+            font-size: 4em;
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+        
+        .upload-text {
+            font-size: 1.3em;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .upload-subtext {
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        #fileInput {
+            display: none;
+        }
+        
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0;
+            padding: 15px;
+            background: #f0f2f5;
+            border-radius: 10px;
+        }
+        
+        .status-item {
+            text-align: center;
+        }
+        
+        .status-label {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .status-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .auth-section {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        
+        .auth-btn {
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .auth-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+        }
+        
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 400px;
+        }
+        
+        .modal-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .modal-header h2 {
+            color: #333;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #666;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+        }
+        
+        .submit-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 2em;
+            cursor: pointer;
+            color: #999;
+        }
+        
+        .notes-container {
+            margin-top: 40px;
+        }
+        
+        .note-card {
+            background: #f8f9ff;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+        }
+        
+        .note-title {
+            font-size: 1.2em;
+            color: #333;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        
+        .note-content {
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        .download-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #f0f2f5;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 20px 0;
+            display: none;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .error-msg {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            display: none;
+        }
+        
+        .success-msg {
+            background: #efe;
+            color: #3c3;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            display: none;
+        }
+    </style>
 </head>
 <body>
+    <div class="auth-section">
+        <button class="auth-btn" id="authBtn">Login / Signup</button>
+        <span id="userName" style="color: white; margin-right: 10px; display: none;"></span>
+    </div>
 
-<h1>Private KP Lectures</h1>
+    <div class="container">
+        <div class="header">
+            <h1>📚 PDF to Short Notes</h1>
+            <p>AI-Powered PDF Summarizer - Upload kariye aur instant notes paiye!</p>
+        </div>
 
-<script async src="https://telegram.org/js/telegram-widget.js?22"
-        data-telegram-channel="PRIVATEKPkj"
-        data-width="100%"
-        data-height="600">
-</script>
+        <div class="main-card">
+            <div class="status-bar">
+                <div class="status-item">
+                    <div class="status-label">Daily Limit (Without Login)</div>
+                    <div class="status-value" id="freeLimit">5/5</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-label">Additional (With Login)</div>
+                    <div class="status-value" id="loginLimit">0/5</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-label">Max File Size</div>
+                    <div class="status-value">1 GB</div>
+                </div>
+            </div>
 
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-icon">📄</div>
+                <div class="upload-text">Click to Upload PDF or Drag & Drop</div>
+                <div class="upload-subtext">Maximum file size: 1 GB | Supported format: PDF</div>
+                <input type="file" id="fileInput" accept=".pdf" />
+            </div>
+
+            <div class="progress-bar" id="progressBar">
+                <div class="progress-fill" id="progressFill">0%</div>
+            </div>
+
+            <div class="error-msg" id="errorMsg"></div>
+            <div class="success-msg" id="successMsg"></div>
+
+            <div class="notes-container" id="notesContainer"></div>
+        </div>
+    </div>
+
+    <div class="modal" id="authModal">
+        <div class="modal-content">
+            <span class="close-modal" id="closeModal">&times;</span>
+            <div class="modal-header">
+                <h2 id="modalTitle">Login</h2>
+            </div>
+            <form id="authForm">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" required />
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" required />
+                </div>
+                <button type="submit" class="submit-btn" id="submitBtn">Login</button>
+            </form>
+            <p style="text-align: center; margin-top: 20px; color: #666;">
+                <span id="toggleAuth" style="cursor: pointer; color: #667eea;">
+                    Don't have an account? Sign up
+                </span>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let isLoggedIn = false;
+        let freeUsage = 0;
+        let loginUsage = 0;
+        let isLoginMode = true;
+
+        // Check local storage for usage
+        function initializeApp() {
+            const today = new Date().toDateString();
+            const savedDate = localStorage.getItem('usageDate');
+            
+            if (savedDate !== today) {
+                localStorage.setItem('usageDate', today);
+                localStorage.setItem('freeUsage', '0');
+                localStorage.setItem('loginUsage', '0');
+            }
+            
+            freeUsage = parseInt(localStorage.getItem('freeUsage') || '0');
+            loginUsage = parseInt(localStorage.getItem('loginUsage') || '0');
+            
+            const savedUser = localStorage.getItem('currentUser');
+            if (savedUser) {
+                isLoggedIn = true;
+                const user = JSON.parse(savedUser);
+                document.getElementById('userName').textContent = user.email;
+                document.getElementById('userName').style.display = 'inline';
+                document.getElementById('authBtn').textContent = 'Logout';
+            }
+            
+            updateStatusBar();
+        }
+
+        // Update status bar
+        function updateStatusBar() {
+            document.getElementById('freeLimit').textContent = `${5 - freeUsage}/5`;
+            document.getElementById('loginLimit').textContent = isLoggedIn ? `${5 - loginUsage}/5` : '0/5';
+        }
+
+        // Upload area handlers
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+
+        uploadArea.addEventListener('click', () => fileInput.click());
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0 && files[0].type === 'application/pdf') {
+                handleFile(files[0]);
+            } else {
+                showError('Please upload a valid PDF file');
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        // Handle file upload
+        async function handleFile(file) {
+            // Check file size (1 GB limit)
+            if (file.size > 1024 * 1024 * 1024) {
+                showError('File size exceeds 1 GB limit');
+                return;
+            }
+
+            // Check usage limits
+            if (!isLoggedIn && freeUsage >= 5) {
+                showError('Daily free limit reached. Please login to upload 5 more PDFs.');
+                return;
+            }
+
+            if (isLoggedIn && freeUsage + loginUsage >= 10) {
+                showError('Daily limit reached (10 PDFs). Please try again tomorrow.');
+                return;
+            }
+
+            // Show progress bar
+            const progressBar = document.getElementById('progressBar');
+            const progressFill = document.getElementById('progressFill');
+            progressBar.style.display = 'block';
+
+            // Simulate upload and processing
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 10;
+                progressFill.style.width = progress + '%';
+                progressFill.textContent = progress + '%';
+
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    processFile(file);
+                }
+            }, 200);
+        }
+
+        // Process PDF and generate notes
+        async function processFile(file) {
+            try {
+                // Simulate API call to process PDF
+                setTimeout(() => {
+                    // Update usage
+                    if (isLoggedIn) {
+                        loginUsage++;
+                        localStorage.setItem('loginUsage', loginUsage.toString());
+                    } else {
+                        freeUsage++;
+                        localStorage.setItem('freeUsage', freeUsage.toString());
+                    }
+                    
+                    updateStatusBar();
+                    
+                    // Generate sample notes
+                    const notes = generateSampleNotes(file.name);
+                    displayNotes(notes);
+                    
+                    showSuccess('PDF processed successfully! Notes generated below.');
+                    document.getElementById('progressBar').style.display = 'none';
+                }, 1500);
+            } catch (error) {
+                showError('Error processing PDF. Please try again.');
+                document.getElementById('progressBar').style.display = 'none';
+            }
+        }
+
+        // Generate sample notes (replace with actual AI processing)
+        function generateSampleNotes(fileName) {
+            return {
+                title: fileName.replace('.pdf', ''),
+                summary: 'This is an AI-generated summary of your PDF document. Key points have been extracted and organized below.',
+                keyPoints: [
+                    'Main concept explained in simple terms',
+                    'Important formulas and definitions highlighted',
+                    'Critical examples for better understanding',
+                    'Summary of each chapter/section',
+                    'Practice questions and answers'
+                ],
+                notes: `
+                    📌 Chapter 1: Introduction
+                    - Key concept 1 explained
+                    - Important definition
+                    - Example with solution
+                    
+                    📌 Chapter 2: Main Content
+                    - Theory simplified
+                    - Step-by-step process
+                    - Practical applications
+                    
+                    📌 Chapter 3: Advanced Topics
+                    - Complex concepts made easy
+                    - Visual representations
+                    - Quick revision points
+                `
+            };
+        }
+
+        // Display notes
+        function displayNotes(notes) {
+            const container = document.getElementById('notesContainer');
+            container.innerHTML = `
+                <div class="note-card">
+                    <div class="note-title">📚 ${notes.title} - Short Notes</div>
+                    <div class="note-content">
+                        <p><strong>Summary:</strong> ${notes.summary}</p>
+                        <br>
+                        <p><strong>Key Points:</strong></p>
+                        <ul>
+                            ${notes.keyPoints.map(point => `<li>${point}</li>`).join('')}
+                        </ul>
+                        <br>
+                        <p><strong>Detailed Notes:</strong></p>
+                        <pre style="white-space: pre-wrap;">${notes.notes}</pre>
+                    </div>
+                    <button class="download-btn" onclick="downloadNotes('${notes.title}')">
+                        📥 Download Notes
+                    </button>
+                </div>
+            `;
+        }
+
+        // Download notes
+        function downloadNotes(title) {
+            const notesContent = document.querySelector('.note-content').innerText;
+            const blob = new Blob([notesContent], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${title}_notes.txt`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        // Auth modal handlers
+        const authBtn = document.getElementById('authBtn');
+        const authModal = document.getElementById('authModal');
+        const closeModal = document.getElementById('closeModal');
+        const authForm = document.getElementById('authForm');
+        const toggleAuth = document.getElementById('toggleAuth');
+        const modalTitle = document.getElementById('modalTitle');
+        const submitBtn = document.getElementById('submitBtn');
+
+        authBtn.addEventListener('click', () => {
+            if (isLoggedIn) {
+                // Logout
+                localStorage.removeItem('currentUser');
+                isLoggedIn = false;
+                loginUsage = 0;
+                localStorage.setItem('loginUsage', '0');
+                document.getElementById('userName').style.display = 'none';
+                authBtn.textContent = 'Login / Signup';
+                updateStatusBar();
+                showSuccess('Logged out successfully!');
+            } else {
+                authModal.style.display = 'block';
+            }
+        });
+
+        closeModal.addEventListener('click', () => {
+            authModal.style.display = 'none';
+        });
+
+        toggleAuth.addEventListener('click', () => {
+            isLoginMode = !isLoginMode;
+            if (isLoginMode) {
+                modalTitle.textContent = 'Login';
+                submitBtn.textContent = 'Login';
+                toggleAuth.textContent = "Don't have an account? Sign up";
+            } else {
+                modalTitle.textContent = 'Sign Up';
+                submitBtn.textContent = 'Sign Up';
+                toggleAuth.textContent = 'Already have an account? Login';
+            }
+        });
+
+        authForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            if (isLoginMode) {
+                // Login logic
+                const users = JSON.parse(localStorage.getItem('users') || '[]');
+                const user = users.find(u => u.email === email && u.password === password);
+                
+                if (user) {
+                    isLoggedIn = true;
+                    localStorage.setItem('currentUser', JSON.stringify(user));
+                    document.getElementById('userName').textContent = email;
+                    document.getElementById('userName').style.display = 'inline';
+                    authBtn.textContent = 'Logout';
+                    authModal.style.display = 'none';
+                    showSuccess('Login successful!');
+                    updateStatusBar();
+                } else {
+                    showError('Invalid email or password');
+                }
+            } else {
+                // Signup logic
+                const users = JSON.parse(localStorage.getItem('users') || '[]');
+                const existingUser = users.find(u => u.email === email);
+                
+                if (existingUser) {
+                    showError('User already exists');
+                } else {
+                    users.push({ email, password });
+                    localStorage.setItem('users', JSON.stringify(users));
+                    showSuccess('Signup successful! Please login.');
+                    isLoginMode = true;
+                    modalTitle.textContent = 'Login';
+                    submitBtn.textContent = 'Login';
+                    toggleAuth.textContent = "Don't have an account? Sign up";
+                }
+            }
+            
+            authForm.reset();
+        });
+
+        // Error and success messages
+        function showError(message) {
+            const errorMsg = document.getElementById('errorMsg');
+            errorMsg.textContent = message;
+            errorMsg.style.display = 'block';
+            setTimeout(() => {
+                errorMsg.style.display = 'none';
+            }, 5000);
+        }
+
+        function showSuccess(message) {
+            const successMsg = document.getElementById('successMsg');
+            successMsg.textContent = message;
+            successMsg.style.display = 'block';
+            setTimeout(() => {
+                successMsg.style.display = 'none';
+            }, 5000);
+        }
+
+        // Initialize app on load
+        window.addEventListener('load', initializeApp);
+    </script>
 </body>
 </html>
