@@ -1,0 +1,1957 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChessGuru - AI Chess Learning Platform</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.css">
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #1a252f;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --board-light: #f0d9b5;
+            --board-dark: #b58863;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* Header Styles */
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 1rem 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+        
+        .logo i {
+            color: var(--secondary);
+        }
+        
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+        
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s;
+            padding: 0.5rem 0;
+        }
+        
+        nav a:hover {
+            color: var(--secondary);
+        }
+        
+        .active {
+            color: var(--secondary);
+            border-bottom: 2px solid var(--secondary);
+        }
+        
+        .user-controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        .btn {
+            padding: 0.6rem 1.2rem;
+            border-radius: 4px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background-color: var(--secondary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #2980b9;
+        }
+        
+        .btn-outline {
+            background-color: transparent;
+            color: white;
+            border: 1px solid white;
+        }
+        
+        .btn-outline:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .btn-accent {
+            background-color: var(--accent);
+            color: white;
+        }
+        
+        .btn-accent:hover {
+            background-color: #c0392b;
+        }
+        
+        /* Main Content */
+        .main-content {
+            display: grid;
+            grid-template-columns: 300px 1fr 350px;
+            gap: 1.5rem;
+            padding: 2rem 0;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            background-color: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            height: fit-content;
+        }
+        
+        .sidebar h3 {
+            margin-bottom: 1rem;
+            color: var(--primary);
+            border-bottom: 1px solid #eee;
+            padding-bottom: 0.5rem;
+        }
+        
+        .bot-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+        
+        .bot-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0.8rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .bot-item:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .bot-item.active {
+            background-color: #e3f2fd;
+            border-left: 4px solid var(--secondary);
+        }
+        
+        .bot-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .bot-info h4 {
+            font-size: 1rem;
+            margin-bottom: 2px;
+        }
+        
+        .bot-info p {
+            font-size: 0.85rem;
+            color: #666;
+        }
+        
+        .difficulty {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .beginner {
+            background-color: #d5f4e6;
+            color: var(--success);
+        }
+        
+        .intermediate {
+            background-color: #fff3cd;
+            color: var(--warning);
+        }
+        
+        .advanced {
+            background-color: #f8d7da;
+            color: var(--accent);
+        }
+        
+        /* Chess Board Area */
+        .chess-area {
+            background-color: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .board-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .board-header h2 {
+            color: var(--primary);
+        }
+        
+        #chessboard {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .board-controls {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        
+        /* Chat & Analysis Panel */
+        .right-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        
+        .chat-container, .analysis-container, .learning-container {
+            background-color: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .panel-header h3 {
+            color: var(--primary);
+        }
+        
+        .chat-messages {
+            height: 300px;
+            overflow-y: auto;
+            border: 1px solid #eee;
+            border-radius: 6px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            background-color: #fafafa;
+        }
+        
+        .message {
+            margin-bottom: 1rem;
+            padding: 0.8rem;
+            border-radius: 8px;
+            max-width: 85%;
+        }
+        
+        .bot-message {
+            background-color: #e3f2fd;
+            align-self: flex-start;
+        }
+        
+        .user-message {
+            background-color: #d4edda;
+            margin-left: auto;
+        }
+        
+        .message-sender {
+            font-weight: 600;
+            margin-bottom: 4px;
+            font-size: 0.9rem;
+        }
+        
+        .message-text {
+            font-size: 0.95rem;
+        }
+        
+        .chat-input {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .chat-input input {
+            flex: 1;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        
+        .analysis-content {
+            font-size: 0.95rem;
+        }
+        
+        .eval-bar {
+            height: 20px;
+            background: linear-gradient(to right, #e74c3c, #f1c40f, #27ae60);
+            border-radius: 10px;
+            margin: 1rem 0;
+            position: relative;
+        }
+        
+        .eval-indicator {
+            position: absolute;
+            top: -5px;
+            width: 10px;
+            height: 30px;
+            background-color: var(--primary);
+            border-radius: 2px;
+            transform: translateX(-50%);
+        }
+        
+        .learning-content {
+            font-size: 0.95rem;
+        }
+        
+        .learning-tip {
+            background-color: #fff8e1;
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            border-left: 4px solid var(--warning);
+        }
+        
+        .learning-tip h4 {
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+        
+        /* Moves List */
+        .moves-container {
+            margin-top: 1.5rem;
+            background-color: #f8f9fa;
+            border-radius: 6px;
+            padding: 1rem;
+        }
+        
+        .moves-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+        
+        .moves-list {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .move-item {
+            padding: 0.5rem;
+            background-color: white;
+            border-radius: 4px;
+            font-family: monospace;
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .move-item:hover {
+            background-color: #e9ecef;
+        }
+        
+        .move-item.active {
+            background-color: #d4edda;
+            font-weight: bold;
+        }
+        
+        /* Footer */
+        footer {
+            background-color: var(--dark);
+            color: white;
+            padding: 2rem 0;
+            margin-top: 2rem;
+        }
+        
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 2rem;
+        }
+        
+        .footer-section h4 {
+            margin-bottom: 1rem;
+            color: var(--secondary);
+        }
+        
+        .footer-section ul {
+            list-style: none;
+        }
+        
+        .footer-section ul li {
+            margin-bottom: 0.5rem;
+        }
+        
+        .footer-section a {
+            color: #ddd;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .footer-section a:hover {
+            color: var(--secondary);
+        }
+        
+        .copyright {
+            text-align: center;
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid #34495e;
+            color: #95a5a6;
+            font-size: 0.9rem;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .main-content {
+                grid-template-columns: 250px 1fr;
+            }
+            
+            .right-panel {
+                grid-column: 1 / span 2;
+                grid-template-columns: 1fr 1fr;
+                display: grid;
+                gap: 1.5rem;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .right-panel {
+                grid-column: 1;
+                grid-template-columns: 1fr;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            nav ul {
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container header-content">
+            <div class="logo">
+                <i class="fas fa-chess-king"></i>
+                <span>ChessGuru</span>
+            </div>
+            
+            <nav>
+                <ul>
+                    <li><a href="#" class="active">Play vs Bot</a></li>
+                    <li><a href="#">Learn Chess</a></li>
+                    <li><a href="#">Analysis</a></li>
+                    <li><a href="#">Openings</a></li>
+                    <li><a href="#">Puzzles</a></li>
+                </ul>
+            </nav>
+            
+            <div class="user-controls">
+                <button class="btn btn-outline"><i class="fas fa-user"></i> Login</button>
+                <button class="btn btn-primary"><i class="fas fa-robot"></i> Try Premium Bots</button>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Main Content -->
+    <div class="container main-content">
+        <!-- Sidebar with Bots -->
+        <div class="sidebar">
+            <h3><i class="fas fa-robot"></i> Choose Your Bot Opponent</h3>
+            <div class="bot-list">
+                <div class="bot-item active" data-bot="chotu">
+                    <div class="bot-icon" style="background-color: #3498db;">
+                        <i class="fas fa-chess-pawn"></i>
+                    </div>
+                    <div class="bot-info">
+                        <h4>Chotu (Beginner)</h4>
+                        <p>Perfect for new players</p>
+                        <span class="difficulty beginner">Beginner</span>
+                    </div>
+                </div>
+                
+                <div class="bot-item" data-bot="raja">
+                    <div class="bot-icon" style="background-color: #f39c12;">
+                        <i class="fas fa-chess-knight"></i>
+                    </div>
+                    <div class="bot-info">
+                        <h4>Raja (Intermediate)</h4>
+                        <p>Good for improving players</p>
+                        <span class="difficulty intermediate">Intermediate</span>
+                    </div>
+                </div>
+                
+                <div class="bot-item" data-bot="grandmaster">
+                    <div class="bot-icon" style="background-color: #e74c3c;">
+                        <i class="fas fa-chess-queen"></i>
+                    </div>
+                    <div class="bot-info">
+                        <h4>Grandmaster AI</h4>
+                        <p>Extremely challenging</p>
+                        <span class="difficulty advanced">Advanced</span>
+                    </div>
+                </div>
+                
+                <div class="bot-item" data-bot="coach">
+                    <div class="bot-icon" style="background-color: #27ae60;">
+                        <i class="fas fa-chess-king"></i>
+                    </div>
+                    <div class="bot-info">
+                        <h4>Coach Bot</h4>
+                        <p>Teaches while playing</p>
+                        <span class="difficulty intermediate">Teaching Mode</span>
+                    </div>
+                </div>
+            </div>
+            
+            <h3 style="margin-top: 2rem;"><i class="fas fa-graduation-cap"></i> Learning Modules</h3>
+            <div class="bot-list">
+                <div class="bot-item">
+                    <i class="fas fa-book" style="color: #3498db; font-size: 1.2rem;"></i>
+                    <div class="bot-info">
+                        <h4>Basic Rules</h4>
+                        <p>Chess ke basic rules seekhein</p>
+                    </div>
+                </div>
+                
+                <div class="bot-item">
+                    <i class="fas fa-chess-board" style="color: #f39c12; font-size: 1.2rem;"></i>
+                    <div class="bot-info">
+                        <h4>Opening Principles</h4>
+                        <p>Game shuru kaise karein</p>
+                    </div>
+                </div>
+                
+                <div class="bot-item">
+                    <i class="fas fa-chess-rook" style="color: #e74c3c; font-size: 1.2rem;"></i>
+                    <div class="bot-info">
+                        <h4>Tactics & Strategies</h4>
+                        <p>Checkmate patterns seekhein</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Chess Board Area -->
+        <div class="chess-area">
+            <div class="board-header">
+                <h2><i class="fas fa-chess-board"></i> Playing vs <span id="current-bot">Chotu</span></h2>
+                <div>
+                    <span class="difficulty beginner">Beginner</span>
+                    <button class="btn btn-accent" id="new-game-btn"><i class="fas fa-plus-circle"></i> New Game</button>
+                </div>
+            </div>
+            
+            <div id="chessboard"></div>
+            
+            <div class="board-controls">
+                <button class="btn btn-outline" id="undo-btn"><i class="fas fa-undo"></i> Undo Move</button>
+                <button class="btn btn-primary" id="hint-btn"><i class="fas fa-lightbulb"></i> Hint Lo</button>
+                <button class="btn btn-outline" id="flip-board-btn"><i class="fas fa-sync-alt"></i> Flip Board</button>
+                <button class="btn btn-accent" id="analyze-btn"><i class="fas fa-chart-line"></i> Analyze Position</button>
+            </div>
+            
+            <!-- Moves List -->
+            <div class="moves-container">
+                <div class="moves-header">
+                    <h4><i class="fas fa-list-ol"></i> Game Moves</h4>
+                    <span id="game-status">White's Turn</span>
+                </div>
+                <div class="moves-list" id="moves-list">
+                    <!-- Moves will be populated here -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right Panel: Chat, Analysis, Learning -->
+        <div class="right-panel">
+            <!-- Chat with Bot -->
+            <div class="chat-container">
+                <div class="panel-header">
+                    <h3><i class="fas fa-comments"></i> Chat with Bot (Hinglish)</h3>
+                    <button class="btn btn-outline" id="clear-chat"><i class="fas fa-trash-alt"></i> Clear</button>
+                </div>
+                
+                <div class="chat-messages" id="chat-messages">
+                    <div class="message bot-message">
+                        <div class="message-sender">Chotu Bot:</div>
+                        <div class="message-text">Namaste! Main Chotu bot hoon. Aapko chess seekhne mein madad karunga. Chalo khelte hain! Pehle aap white pieces se shuru karein.</div>
+                    </div>
+                    
+                    <div class="message user-message">
+                        <div class="message-sender">You:</div>
+                        <div class="message-text">Hi Chotu! Mujhe openings ke baare mein kuch tips do.</div>
+                    </div>
+                    
+                    <div class="message bot-message">
+                        <div class="message-sender">Chotu Bot:</div>
+                        <div class="message-text">Bilkul! Opening mein center control karna important hai. Knights ko pehle develop karein, fir bishops. King ko safety ke liye castle karna na bhoolen.</div>
+                    </div>
+                </div>
+                
+                <div class="chat-input">
+                    <input type="text" id="chat-input" placeholder="Type your message in Hinglish...">
+                    <button class="btn btn-primary" id="send-btn"><i class="fas fa-paper-plane"></i> Send</button>
+                </div>
+            </div>
+            
+            <!-- Analysis Panel -->
+            <div class="analysis-container">
+                <div class="panel-header">
+                    <h3><i class="fas fa-chart-bar"></i> Position Analysis</h3>
+                    <span id="eval-text">+0.3 (White Better)</span>
+                </div>
+                
+                <div class="eval-bar">
+                    <div class="eval-indicator" style="left: 55%;"></div>
+                </div>
+                
+                <div class="analysis-content">
+                    <p><strong>Best Move:</strong> <span id="best-move">Nf3</span></p>
+                    <p><strong>Evaluation:</strong> White has a slight advantage due to better center control.</p>
+                    <p><strong>Bot Analysis:</strong> "Aapka last move accha tha, leking knight ko develop karna zyada better hota. Center control important hai."</p>
+                    
+                    <div style="margin-top: 1rem;">
+                        <h4>Top Engine Moves:</h4>
+                        <ol>
+                            <li>Nf3 (Best) - Knight development</li>
+                            <li>d4 - Center control</li>
+                            <li>Bc4 - Bishop development</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Learning Tips -->
+            <div class="learning-container">
+                <div class="panel-header">
+                    <h3><i class="fas fa-lightbulb"></i> Hinglish Learning Tips</h3>
+                    <button class="btn btn-outline" id="next-tip"><i class="fas fa-forward"></i> Next</button>
+                </div>
+                
+                <div class="learning-content">
+                    <div class="learning-tip">
+                        <h4><i class="fas fa-chess-pawn"></i> Pawn Structure</h4>
+                        <p>Pawns aapke game ki foundation hain. Inhe advance karte waqt dhyan rahe ki aap weak squares na create karein. Doubled pawns se bachne ki koshish karein.</p>
+                    </div>
+                    
+                    <div class="learning-tip">
+                        <h4><i class="fas fa-chess-king"></i> King Safety</h4>
+                        <p>King ko hamesha safe rakhna sabse zaroori hai. Jaldi se jaldi castle karna seekhein. King ko corner mein rakhna zyada safe hota hai.</p>
+                    </div>
+                    
+                    <div class="learning-tip">
+                        <h4><i class="fas fa-chess-queen"></i> Piece Coordination</h4>
+                        <p>Sab pieces ko milkar kaam karna seekhein. Ek piece ko akela mat chhod dein. Pieces ko aapas mein support karna important hai attack aur defence dono ke liye.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <footer>
+        <div class="container footer-content">
+            <div class="footer-section">
+                <h4>ChessGuru</h4>
+                <p>AI-powered chess learning platform with Hinglish interface. Learn, play, and improve your chess skills with intelligent bots.</p>
+            </div>
+            
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="#">Play vs Bots</a></li>
+                    <li><a href="#">Learning Modules</a></li>
+                    <li><a href="#">Game Analysis</a></li>
+                    <li><a href="#">Opening Explorer</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-section">
+                <h4>Bot Levels</h4>
+                <ul>
+                    <li><a href="#">Beginner Bots</a></li>
+                    <li><a href="#">Intermediate Bots</a></li>
+                    <li><a href="#">Advanced Bots</a></li>
+                    <li><a href="#">Coach Mode</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-section">
+                <h4>Connect</h4>
+                <ul>
+                    <li><a href="#"><i class="fab fa-github"></i> GitHub</a></li>
+                    <li><a href="#"><i class="fas fa-code"></i> Contribute</a></li>
+                    <li><a href="#"><i class="fas fa-bug"></i> Report Issue</a></li>
+                    <li><a href="#"><i class="fas fa-envelope"></i> Contact</a></li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="container copyright">
+            <p>&copy; 2023 ChessGuru. All rights reserved. | Designed for chess learning with AI bots | Hinglish Interface</p>
+        </div>
+    </footer>
+    
+    <!-- Chessboard.js and Chess.js libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.13.4/chess.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    
+    <script>
+        // Initialize chess game
+        const game = new Chess();
+        let board = null;
+        let currentBot = 'chotu';
+        let botThinking = false;
+        let moveHistory = [];
+        
+        // Bot responses in Hinglish
+        const botResponses = {
+            chotu: [
+                "Shabash! Aapne accha move kiya.",
+                "Dhyaan se sochiye, queen jaldi mat nikaliye.",
+                "Castle karna na bhooliye, king safe rahega.",
+                "Mere hisaab se aapko knight develop karna chahiye tha.",
+                "Aap winning position mein hain, lekin careful rahiye.",
+                "Checkmate ka mauka hai! Dhundhiye.",
+                "Pawn structure weak ho raha hai, is par dhyan dijiye.",
+                "Center control aapke haath mein hai, iska fayda uthaiye."
+            ],
+            raja: [
+                "Interesting move! Lekin maine iska jawab pehle se soch rakha tha.",
+                "Aapka strategy accha hai, leking main thoda better position mein hoon.",
+                "Endgame aane wala hai, pawn promotion par dhyan dijiye.",
+                "Aapne meri weakness exploit ki, ab main counter attack karunga.",
+                "Position equal hai, ab dono players ko accurate moves chahiye.",
+                "Time management bhi important hai, jaldi mat kijiye.",
+                "Aapka last move tactical mistake tha, main advantage le lunga."
+            ],
+            grandmaster: [
+                "Theoretical position hai, main isse 20 moves tak analyze kar chuka hoon.",
+                "Aapne main line se deviate kiya, interesting choice.",
+                "Computer evaluation ke hisaab se position equal hai.",
+                "Aapka move top engine move se 0.3 pawns kam strong hai.",
+                "Endgame technique improve karne ki zaroorat hai.",
+                "Positional sacrifice ka soch rahe hain? Risky hai.",
+                "Mere database mein ye position 127 baar aaya hai, 60% white jeeta hai."
+            ],
+            coach: [
+                "Accha move! Kya aap bata sakte hain is move ka idea kya hai?",
+                "Is position mein aapko kya plan banana chahiye?",
+                "Maine notice kiya aap knights ko pehle develop nahi karte.",
+                "Castling karne ka perfect time aa gaya hai.",
+                "Aapke pawns weak squares create kar rahe hain, is par dhyan dijiye.",
+                "Piece coordination improve karein, sab pieces milkar kaam karein.",
+                "Aap winning position mein hain, lekin conversion technique practice karein."
+            ]
+        };
+        
+        // Learning tips in Hinglish
+        const learningTips = [
+            {
+                title: "Opening Principles",
+                content: "Chess opening ke 3 main principles hain: 1) Center control karein, 2) Pieces develop karein (knights aur bishops pehle), 3) King ko safe jagah par le jayein (castling)."
+            },
+            {
+                title: "Piece Values",
+                content: "Har piece ki value samajhein: Queen = 9 points, Rook = 5, Bishop = 3, Knight = 3, Pawn = 1. Isse aap exchanges better evaluate kar payenge."
+            },
+            {
+                title: "Checkmate Patterns",
+                content: "Basic checkmate patterns seekhein: 1) King aur queen se checkmate, 2) Do rooks se checkmate, 3) King aur rook se checkmate (aisa karne ke liye opposition concept samajhein)."
+            },
+            {
+                title: "Tactics",
+                content: "Chess tactics regularly practice karein: Fork, Pin, Skewer, Discovery attack, Double check. Roz 5 puzzles solve karein improvement ke liye."
+            },
+            {
+                title: "Endgame Basics",
+                content: "Endgame mein king active hona chahiye. Pawn promotion endgame ka main goal hota hai. King aur pawn vs king endgame seekhna zaroori hai."
+            },
+            {
+                title: "Time Management",
+                content: "Game mein time manage karna seekhein. Opening moves jaldi karein, complex positions mein time lene se na darein. Time trouble se bachne ki practice karein."
+            }
+        ];
+        
+        // Initialize chessboard
+        function initBoard() {
+            const config = {
+                draggable: true,
+                position: 'start',
+                onDragStart: onDragStart,
+                onDrop: onDrop,
+                onSnapEnd: onSnapEnd,
+                pieceTheme: 'https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/img/chesspieces/wikipedia/{piece}.png'
+            };
+            
+            board = Chessboard('chessboard', config);
+            updateMovesList();
+        }
+        
+        // Handle drag start
+        function onDragStart(source, piece, position, orientation) {
+            // Don't allow moving if game is over or bot is thinking
+            if (game.game_over() || botThinking) return false;
+            
+            // Only allow player to move their pieces (white)
+            if (piece.search(/^b/) !== -1) return false;
+            
+            // Only allow player to move when it's white's turn
+            if (game.turn() === 'b') return false;
+        }
+        
+        // Handle drop
+        function onDrop(source, target) {
+            // See if the move is legal
+            const move = game.move({
+                from: source,
+                to: target,
+                promotion: 'q' // Always promote to queen for simplicity
+            });
+            
+            // Illegal move
+            if (move === null) return 'snapback';
+            
+            // Add to move history
+            moveHistory.push(move);
+            updateMovesList();
+            
+            // Update game status
+            updateGameStatus();
+            
+            // If game is not over, let bot move after a delay
+            if (!game.game_over()) {
+                botThinking = true;
+                setTimeout(makeBotMove, 1000);
+            }
+            
+            // Add user message to chat
+            addUserMessage(`I moved ${move.san}`);
+            
+            return true;
+        }
+        
+        // Handle snap end
+        function onSnapEnd() {
+            board.position(game.fen());
+        }
+        
+        // Make bot move
+        function makeBotMove() {
+            if (game.game_over()) {
+                botThinking = false;
+                return;
+            }
+            
+            // Different bot strategies based on level
+            let moves = game.moves();
+            let move;
+            
+            if (currentBot === 'chotu') {
+                // Beginner bot - sometimes makes mistakes
+                if (Math.random() < 0.3) {
+                    // Make a suboptimal move
+                    let badMoves = moves.filter(m => {
+                        // Filter out obvious good moves
+                        return !m.includes('+') && !m.includes('x') && m.length <= 4;
+                    });
+                    move = badMoves[Math.floor(Math.random() * badMoves.length)] || moves[Math.floor(Math.random() * moves.length)];
+                } else {
+                    // Make a random move
+                    move = moves[Math.floor(Math.random() * moves.length)];
+                }
+            } else if (currentBot === 'raja') {
+                // Intermediate bot - tries to capture pieces
+                let capturingMoves = moves.filter(m => m.includes('x'));
+                if (capturingMoves.length > 0 && Math.random() < 0.7) {
+                    move = capturingMoves[Math.floor(Math.random() * capturingMoves.length)];
+                } else {
+                    move = moves[Math.floor(Math.random() * moves.length)];
+                }
+            } else if (currentBot === 'grandmaster') {
+                // Advanced bot - tries to check or checkmate
+                let checkingMoves = moves.filter(m => m.includes('+'));
+                let matingMoves = moves.filter(m => m.includes('#'));
+                
+                if (matingMoves.length > 0) {
+                    move = matingMoves[0];
+                } else if (checkingMoves.length > 0) {
+                    move = checkingMoves[Math.floor(Math.random() * checkingMoves.length)];
+                } else {
+                    // Try to find a good move
+                    let goodMoves = moves.filter(m => {
+                        // Prefer moves that develop pieces or control center
+                        return m.includes('N') || m.includes('B') || m.includes('d') || m.includes('e');
+                    });
+                    move = goodMoves.length > 0 ? 
+                           goodMoves[Math.floor(Math.random() * goodMoves.length)] : 
+                           moves[Math.floor(Math.random() * moves.length)];
+                }
+            } else {
+                // Coach bot - makes reasonable moves
+                move = moves[Math.floor(Math.random() * moves.length)];
+            }
+            
+            // Make the move
+            game.move(move);
+            moveHistory.push(move);
+            
+            // Update board
+            board.position(game.fen());
+            updateMovesList();
+            updateGameStatus();
+            
+            //<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChessGuru - AI Chess Learning Platform</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.css">
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #1a252f;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --board-light: #f0d9b5;
+            --board-dark: #b58863;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* Header Styles */
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 1rem 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+        
+        .logo i {
+            color: var(--secondary);
+        }
+        
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+        
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s;
+            padding: 0.5rem 0;
+        }
+        
+        nav a:hover {
+            color: var(--secondary);
+        }
+        
+        .active {
+            color: var(--secondary);
+            border-bottom: 2px solid var(--secondary);
+        }
+        
+        .user-controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        .btn {
+            padding: 0.6rem 1.2rem;
+            border-radius: 4px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background-color: var(--secondary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #2980b9;
+        }
+        
+        .btn-outline {
+            background-color: transparent;
+            color: white;
+            border: 1px solid white;
+        }
+        
+        .btn-outline:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .btn-accent {
+            background-color: var(--accent);
+            color: white;
+        }
+        
+        .btn-accent:hover {
+            background-color: #c0392b;
+        }
+        
+        /* Main Content */
+        .main-content {
+            display: grid;
+            grid-template-columns: 300px 1fr 350px;
+            gap: 1.5rem;
+            padding: 2rem 0;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            background-color: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            height: fit-content;
+        }
+        
+        .sidebar h3 {
+            margin-bottom: 1rem;
+            color: var(--primary);
+            border-bottom: 1px solid #eee;
+            padding-bottom: 0.5rem;
+        }
+        
+        .bot-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+        
+        .bot-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0.8rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .bot-item:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .bot-item.active {
+            background-color: #e3f2fd;
+            border-left: 4px solid var(--secondary);
+        }
+        
+        .bot-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .bot-info h4 {
+            font-size: 1rem;
+            margin-bottom: 2px;
+        }
+        
+        .bot-info p {
+            font-size: 0.85rem;
+            color: #666;
+        }
+        
+        .difficulty {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .beginner {
+            background-color: #d5f4e6;
+            color: var(--success);
+        }
+        
+        .intermediate {
+            background-color: #fff3cd;
+            color: var(--warning);
+        }
+        
+        .advanced {
+            background-color: #f8d7da;
+            color: var(--accent);
+        }
+        
+        /* Chess Board Area */
+        .chess-area {
+            background-color: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .board-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .board-header h2 {
+            color: var(--primary);
+        }
+        
+        #chessboard {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .board-controls {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        
+        /* Chat & Analysis Panel */
+        .right-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        
+        .chat-container, .analysis-container, .learning-container {
+            background-color: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .panel-header h3 {
+            color: var(--primary);
+        }
+        
+        .chat-messages {
+            height: 300px;
+            overflow-y: auto;
+            border: 1px solid #eee;
+            border-radius: 6px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            background-color: #fafafa;
+        }
+        
+        .message {
+            margin-bottom: 1rem;
+            padding: 0.8rem;
+            border-radius: 8px;
+            max-width: 85%;
+        }
+        
+        .bot-message {
+            background-color: #e3f2fd;
+            align-self: flex-start;
+        }
+        
+        .user-message {
+            background-color: #d4edda;
+            margin-left: auto;
+        }
+        
+        .message-sender {
+            font-weight: 600;
+            margin-bottom: 4px;
+            font-size: 0.9rem;
+        }
+        
+        .message-text {
+            font-size: 0.95rem;
+        }
+        
+        .chat-input {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .chat-input input {
+            flex: 1;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        
+        .analysis-content {
+            font-size: 0.95rem;
+        }
+        
+        .eval-bar {
+            height: 20px;
+            background: linear-gradient(to right, #e74c3c, #f1c40f, #27ae60);
+            border-radius: 10px;
+            margin: 1rem 0;
+            position: relative;
+        }
+        
+        .eval-indicator {
+            position: absolute;
+            top: -5px;
+            width: 10px;
+            height: 30px;
+            background-color: var(--primary);
+            border-radius: 2px;
+            transform: translateX(-50%);
+        }
+        
+        .learning-content {
+            font-size: 0.95rem;
+        }
+        
+        .learning-tip {
+            background-color: #fff8e1;
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            border-left: 4px solid var(--warning);
+        }
+        
+        .learning-tip h4 {
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+        
+        /* Moves List */
+        .moves-container {
+            margin-top: 1.5rem;
+            background-color: #f8f9fa;
+            border-radius: 6px;
+            padding: 1rem;
+        }
+        
+        .moves-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+        
+        .moves-list {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .move-item {
+            padding: 0.5rem;
+            background-color: white;
+            border-radius: 4px;
+            font-family: monospace;
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .move-item:hover {
+            background-color: #e9ecef;
+        }
+        
+        .move-item.active {
+            background-color: #d4edda;
+            font-weight: bold;
+        }
+        
+        /* Footer */
+        footer {
+            background-color: var(--dark);
+            color: white;
+            padding: 2rem 0;
+            margin-top: 2rem;
+        }
+        
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 2rem;
+        }
+        
+        .footer-section h4 {
+            margin-bottom: 1rem;
+            color: var(--secondary);
+        }
+        
+        .footer-section ul {
+            list-style: none;
+        }
+        
+        .footer-section ul li {
+            margin-bottom: 0.5rem;
+        }
+        
+        .footer-section a {
+            color: #ddd;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .footer-section a:hover {
+            color: var(--secondary);
+        }
+        
+        .copyright {
+            text-align: center;
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid #34495e;
+            color: #95a5a6;
+            font-size: 0.9rem;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .main-content {
+                grid-template-columns: 250px 1fr;
+            }
+            
+            .right-panel {
+                grid-column: 1 / span 2;
+                grid-template-columns: 1fr 1fr;
+                display: grid;
+                gap: 1.5rem;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .right-panel {
+                grid-column: 1;
+                grid-template-columns: 1fr;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            nav ul {
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container header-content">
+            <div class="logo">
+                <i class="fas fa-chess-king"></i>
+                <span>ChessGuru</span>
+            </div>
+            
+            <nav>
+                <ul>
+                    <li><a href="#" class="active">Play vs Bot</a></li>
+                    <li><a href="#">Learn Chess</a></li>
+                    <li><a href="#">Analysis</a></li>
+                    <li><a href="#">Openings</a></li>
+                    <li><a href="#">Puzzles</a></li>
+                </ul>
+            </nav>
+            
+            <div class="user-controls">
+                <button class="btn btn-outline"><i class="fas fa-user"></i> Login</button>
+                <button class="btn btn-primary"><i class="fas fa-robot"></i> Try Premium Bots</button>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Main Content -->
+    <div class="container main-content">
+        <!-- Sidebar with Bots -->
+        <div class="sidebar">
+            <h3><i class="fas fa-robot"></i> Choose Your Bot Opponent</h3>
+            <div class="bot-list">
+                <div class="bot-item active" data-bot="chotu">
+                    <div class="bot-icon" style="background-color: #3498db;">
+                        <i class="fas fa-chess-pawn"></i>
+                    </div>
+                    <div class="bot-info">
+                        <h4>Chotu (Beginner)</h4>
+                        <p>Perfect for new players</p>
+                        <span class="difficulty beginner">Beginner</span>
+                    </div>
+                </div>
+                
+                <div class="bot-item" data-bot="raja">
+                    <div class="bot-icon" style="background-color: #f39c12;">
+                        <i class="fas fa-chess-knight"></i>
+                    </div>
+                    <div class="bot-info">
+                        <h4>Raja (Intermediate)</h4>
+                        <p>Good for improving players</p>
+                        <span class="difficulty intermediate">Intermediate</span>
+                    </div>
+                </div>
+                
+                <div class="bot-item" data-bot="grandmaster">
+                    <div class="bot-icon" style="background-color: #e74c3c;">
+                        <i class="fas fa-chess-queen"></i>
+                    </div>
+                    <div class="bot-info">
+                        <h4>Grandmaster AI</h4>
+                        <p>Extremely challenging</p>
+                        <span class="difficulty advanced">Advanced</span>
+                    </div>
+                </div>
+                
+                <div class="bot-item" data-bot="coach">
+                    <div class="bot-icon" style="background-color: #27ae60;">
+                        <i class="fas fa-chess-king"></i>
+                    </div>
+                    <div class="bot-info">
+                        <h4>Coach Bot</h4>
+                        <p>Teaches while playing</p>
+                        <span class="difficulty intermediate">Teaching Mode</span>
+                    </div>
+                </div>
+            </div>
+            
+            <h3 style="margin-top: 2rem;"><i class="fas fa-graduation-cap"></i> Learning Modules</h3>
+            <div class="bot-list">
+                <div class="bot-item">
+                    <i class="fas fa-book" style="color: #3498db; font-size: 1.2rem;"></i>
+                    <div class="bot-info">
+                        <h4>Basic Rules</h4>
+                        <p>Chess ke basic rules seekhein</p>
+                    </div>
+                </div>
+                
+                <div class="bot-item">
+                    <i class="fas fa-chess-board" style="color: #f39c12; font-size: 1.2rem;"></i>
+                    <div class="bot-info">
+                        <h4>Opening Principles</h4>
+                        <p>Game shuru kaise karein</p>
+                    </div>
+                </div>
+                
+                <div class="bot-item">
+                    <i class="fas fa-chess-rook" style="color: #e74c3c; font-size: 1.2rem;"></i>
+                    <div class="bot-info">
+                        <h4>Tactics & Strategies</h4>
+                        <p>Checkmate patterns seekhein</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Chess Board Area -->
+        <div class="chess-area">
+            <div class="board-header">
+                <h2><i class="fas fa-chess-board"></i> Playing vs <span id="current-bot">Chotu</span></h2>
+                <div>
+                    <span class="difficulty beginner">Beginner</span>
+                    <button class="btn btn-accent" id="new-game-btn"><i class="fas fa-plus-circle"></i> New Game</button>
+                </div>
+            </div>
+            
+            <div id="chessboard"></div>
+            
+            <div class="board-controls">
+                <button class="btn btn-outline" id="undo-btn"><i class="fas fa-undo"></i> Undo Move</button>
+                <button class="btn btn-primary" id="hint-btn"><i class="fas fa-lightbulb"></i> Hint Lo</button>
+                <button class="btn btn-outline" id="flip-board-btn"><i class="fas fa-sync-alt"></i> Flip Board</button>
+                <button class="btn btn-accent" id="analyze-btn"><i class="fas fa-chart-line"></i> Analyze Position</button>
+            </div>
+            
+            <!-- Moves List -->
+            <div class="moves-container">
+                <div class="moves-header">
+                    <h4><i class="fas fa-list-ol"></i> Game Moves</h4>
+                    <span id="game-status">White's Turn</span>
+                </div>
+                <div class="moves-list" id="moves-list">
+                    <!-- Moves will be populated here -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right Panel: Chat, Analysis, Learning -->
+        <div class="right-panel">
+            <!-- Chat with Bot -->
+            <div class="chat-container">
+                <div class="panel-header">
+                    <h3><i class="fas fa-comments"></i> Chat with Bot (Hinglish)</h3>
+                    <button class="btn btn-outline" id="clear-chat"><i class="fas fa-trash-alt"></i> Clear</button>
+                </div>
+                
+                <div class="chat-messages" id="chat-messages">
+                    <div class="message bot-message">
+                        <div class="message-sender">Chotu Bot:</div>
+                        <div class="message-text">Namaste! Main Chotu bot hoon. Aapko chess seekhne mein madad karunga. Chalo khelte hain! Pehle aap white pieces se shuru karein.</div>
+                    </div>
+                    
+                    <div class="message user-message">
+                        <div class="message-sender">You:</div>
+                        <div class="message-text">Hi Chotu! Mujhe openings ke baare mein kuch tips do.</div>
+                    </div>
+                    
+                    <div class="message bot-message">
+                        <div class="message-sender">Chotu Bot:</div>
+                        <div class="message-text">Bilkul! Opening mein center control karna important hai. Knights ko pehle develop karein, fir bishops. King ko safety ke liye castle karna na bhoolen.</div>
+                    </div>
+                </div>
+                
+                <div class="chat-input">
+                    <input type="text" id="chat-input" placeholder="Type your message in Hinglish...">
+                    <button class="btn btn-primary" id="send-btn"><i class="fas fa-paper-plane"></i> Send</button>
+                </div>
+            </div>
+            
+            <!-- Analysis Panel -->
+            <div class="analysis-container">
+                <div class="panel-header">
+                    <h3><i class="fas fa-chart-bar"></i> Position Analysis</h3>
+                    <span id="eval-text">+0.3 (White Better)</span>
+                </div>
+                
+                <div class="eval-bar">
+                    <div class="eval-indicator" style="left: 55%;"></div>
+                </div>
+                
+                <div class="analysis-content">
+                    <p><strong>Best Move:</strong> <span id="best-move">Nf3</span></p>
+                    <p><strong>Evaluation:</strong> White has a slight advantage due to better center control.</p>
+                    <p><strong>Bot Analysis:</strong> "Aapka last move accha tha, leking knight ko develop karna zyada better hota. Center control important hai."</p>
+                    
+                    <div style="margin-top: 1rem;">
+                        <h4>Top Engine Moves:</h4>
+                        <ol>
+                            <li>Nf3 (Best) - Knight development</li>
+                            <li>d4 - Center control</li>
+                            <li>Bc4 - Bishop development</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Learning Tips -->
+            <div class="learning-container">
+                <div class="panel-header">
+                    <h3><i class="fas fa-lightbulb"></i> Hinglish Learning Tips</h3>
+                    <button class="btn btn-outline" id="next-tip"><i class="fas fa-forward"></i> Next</button>
+                </div>
+                
+                <div class="learning-content">
+                    <div class="learning-tip">
+                        <h4><i class="fas fa-chess-pawn"></i> Pawn Structure</h4>
+                        <p>Pawns aapke game ki foundation hain. Inhe advance karte waqt dhyan rahe ki aap weak squares na create karein. Doubled pawns se bachne ki koshish karein.</p>
+                    </div>
+                    
+                    <div class="learning-tip">
+                        <h4><i class="fas fa-chess-king"></i> King Safety</h4>
+                        <p>King ko hamesha safe rakhna sabse zaroori hai. Jaldi se jaldi castle karna seekhein. King ko corner mein rakhna zyada safe hota hai.</p>
+                    </div>
+                    
+                    <div class="learning-tip">
+                        <h4><i class="fas fa-chess-queen"></i> Piece Coordination</h4>
+                        <p>Sab pieces ko milkar kaam karna seekhein. Ek piece ko akela mat chhod dein. Pieces ko aapas mein support karna important hai attack aur defence dono ke liye.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <footer>
+        <div class="container footer-content">
+            <div class="footer-section">
+                <h4>ChessGuru</h4>
+                <p>AI-powered chess learning platform with Hinglish interface. Learn, play, and improve your chess skills with intelligent bots.</p>
+            </div>
+            
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="#">Play vs Bots</a></li>
+                    <li><a href="#">Learning Modules</a></li>
+                    <li><a href="#">Game Analysis</a></li>
+                    <li><a href="#">Opening Explorer</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-section">
+                <h4>Bot Levels</h4>
+                <ul>
+                    <li><a href="#">Beginner Bots</a></li>
+                    <li><a href="#">Intermediate Bots</a></li>
+                    <li><a href="#">Advanced Bots</a></li>
+                    <li><a href="#">Coach Mode</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-section">
+                <h4>Connect</h4>
+                <ul>
+                    <li><a href="#"><i class="fab fa-github"></i> GitHub</a></li>
+                    <li><a href="#"><i class="fas fa-code"></i> Contribute</a></li>
+                    <li><a href="#"><i class="fas fa-bug"></i> Report Issue</a></li>
+                    <li><a href="#"><i class="fas fa-envelope"></i> Contact</a></li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="container copyright">
+            <p>&copy; 2023 ChessGuru. All rights reserved. | Designed for chess learning with AI bots | Hinglish Interface</p>
+        </div>
+    </footer>
+    
+    <!-- Chessboard.js and Chess.js libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.13.4/chess.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    
+    <script>
+        // Initialize chess game
+        const game = new Chess();
+        let board = null;
+        let currentBot = 'chotu';
+        let botThinking = false;
+        let moveHistory = [];
+        
+        // Bot responses in Hinglish
+        const botResponses = {
+            chotu: [
+                "Shabash! Aapne accha move kiya.",
+                "Dhyaan se sochiye, queen jaldi mat nikaliye.",
+                "Castle karna na bhooliye, king safe rahega.",
+                "Mere hisaab se aapko knight develop karna chahiye tha.",
+                "Aap winning position mein hain, lekin careful rahiye.",
+                "Checkmate ka mauka hai! Dhundhiye.",
+                "Pawn structure weak ho raha hai, is par dhyan dijiye.",
+                "Center control aapke haath mein hai, iska fayda uthaiye."
+            ],
+            raja: [
+                "Interesting move! Lekin maine iska jawab pehle se soch rakha tha.",
+                "Aapka strategy accha hai, leking main thoda better position mein hoon.",
+                "Endgame aane wala hai, pawn promotion par dhyan dijiye.",
+                "Aapne meri weakness exploit ki, ab main counter attack karunga.",
+                "Position equal hai, ab dono players ko accurate moves chahiye.",
+                "Time management bhi important hai, jaldi mat kijiye.",
+                "Aapka last move tactical mistake tha, main advantage le lunga."
+            ],
+            grandmaster: [
+                "Theoretical position hai, main isse 20 moves tak analyze kar chuka hoon.",
+                "Aapne main line se deviate kiya, interesting choice.",
+                "Computer evaluation ke hisaab se position equal hai.",
+                "Aapka move top engine move se 0.3 pawns kam strong hai.",
+                "Endgame technique improve karne ki zaroorat hai.",
+                "Positional sacrifice ka soch rahe hain? Risky hai.",
+                "Mere database mein ye position 127 baar aaya hai, 60% white jeeta hai."
+            ],
+            coach: [
+                "Accha move! Kya aap bata sakte hain is move ka idea kya hai?",
+                "Is position mein aapko kya plan banana chahiye?",
+                "Maine notice kiya aap knights ko pehle develop nahi karte.",
+                "Castling karne ka perfect time aa gaya hai.",
+                "Aapke pawns weak squares create kar rahe hain, is par dhyan dijiye.",
+                "Piece coordination improve karein, sab pieces milkar kaam karein.",
+                "Aap winning position mein hain, lekin conversion technique practice karein."
+            ]
+        };
+        
+        // Learning tips in Hinglish
+        const learningTips = [
+            {
+                title: "Opening Principles",
+                content: "Chess opening ke 3 main principles hain: 1) Center control karein, 2) Pieces develop karein (knights aur bishops pehle), 3) King ko safe jagah par le jayein (castling)."
+            },
+            {
+                title: "Piece Values",
+                content: "Har piece ki value samajhein: Queen = 9 points, Rook = 5, Bishop = 3, Knight = 3, Pawn = 1. Isse aap exchanges better evaluate kar payenge."
+            },
+            {
+                title: "Checkmate Patterns",
+                content: "Basic checkmate patterns seekhein: 1) King aur queen se checkmate, 2) Do rooks se checkmate, 3) King aur rook se checkmate (aisa karne ke liye opposition concept samajhein)."
+            },
+            {
+                title: "Tactics",
+                content: "Chess tactics regularly practice karein: Fork, Pin, Skewer, Discovery attack, Double check. Roz 5 puzzles solve karein improvement ke liye."
+            },
+            {
+                title: "Endgame Basics",
+                content: "Endgame mein king active hona chahiye. Pawn promotion endgame ka main goal hota hai. King aur pawn vs king endgame seekhna zaroori hai."
+            },
+            {
+                title: "Time Management",
+                content: "Game mein time manage karna seekhein. Opening moves jaldi karein, complex positions mein time lene se na darein. Time trouble se bachne ki practice karein."
+            }
+        ];
+        
+        // Initialize chessboard
+        function initBoard() {
+            const config = {
+                draggable: true,
+                position: 'start',
+                onDragStart: onDragStart,
+                onDrop: onDrop,
+                onSnapEnd: onSnapEnd,
+                pieceTheme: 'https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/img/chesspieces/wikipedia/{piece}.png'
+            };
+            
+            board = Chessboard('chessboard', config);
+            updateMovesList();
+        }
+        
+        // Handle drag start
+        function onDragStart(source, piece, position, orientation) {
+            // Don't allow moving if game is over or bot is thinking
+            if (game.game_over() || botThinking) return false;
+            
+            // Only allow player to move their pieces (white)
+            if (piece.search(/^b/) !== -1) return false;
+            
+            // Only allow player to move when it's white's turn
+            if (game.turn() === 'b') return false;
+        }
+        
+        // Handle drop
+        function onDrop(source, target) {
+            // See if the move is legal
+            const move = game.move({
+                from: source,
+                to: target,
+                promotion: 'q' // Always promote to queen for simplicity
+            });
+            
+            // Illegal move
+            if (move === null) return 'snapback';
+            
+            // Add to move history
+            moveHistory.push(move);
+            updateMovesList();
+            
+            // Update game status
+            updateGameStatus();
+            
+            // If game is not over, let bot move after a delay
+            if (!game.game_over()) {
+                botThinking = true;
+                setTimeout(makeBotMove, 1000);
+            }
+            
+            // Add user message to chat
+            addUserMessage(`I moved ${move.san}`);
+            
+            return true;
+        }
+        
+        // Handle snap end
+        function onSnapEnd() {
+            board.position(game.fen());
+        }
+        
+        // Make bot move
+        function makeBotMove() {
+            if (game.game_over()) {
+                botThinking = false;
+                return;
+            }
+            
+            // Different bot strategies based on level
+            let moves = game.moves();
+            let move;
+            
+            if (currentBot === 'chotu') {
+                // Beginner bot - sometimes makes mistakes
+                if (Math.random() < 0.3) {
+                    // Make a suboptimal move
+                    let badMoves = moves.filter(m => {
+                        // Filter out obvious good moves
+                        return !m.includes('+') && !m.includes('x') && m.length <= 4;
+                    });
+                    move = badMoves[Math.floor(Math.random() * badMoves.length)] || moves[Math.floor(Math.random() * moves.length)];
+                } else {
+                    // Make a random move
+                    move = moves[Math.floor(Math.random() * moves.length)];
+                }
+            } else if (currentBot === 'raja') {
+                // Intermediate bot - tries to capture pieces
+                let capturingMoves = moves.filter(m => m.includes('x'));
+                if (capturingMoves.length > 0 && Math.random() < 0.7) {
+                    move = capturingMoves[Math.floor(Math.random() * capturingMoves.length)];
+                } else {
+                    move = moves[Math.floor(Math.random() * moves.length)];
+                }
+            } else if (currentBot === 'grandmaster') {
+                // Advanced bot - tries to check or checkmate
+                let checkingMoves = moves.filter(m => m.includes('+'));
+                let matingMoves = moves.filter(m => m.includes('#'));
+                
+                if (matingMoves.length > 0) {
+                    move = matingMoves[0];
+                } else if (checkingMoves.length > 0) {
+                    move = checkingMoves[Math.floor(Math.random() * checkingMoves.length)];
+                } else {
+                    // Try to find a good move
+                    let goodMoves = moves.filter(m => {
+                        // Prefer moves that develop pieces or control center
+                        return m.includes('N') || m.includes('B') || m.includes('d') || m.includes('e');
+                    });
+                    move = goodMoves.length > 0 ? 
+                           goodMoves[Math.floor(Math.random() * goodMoves.length)] : 
+                           moves[Math.floor(Math.random() * moves.length)];
+                }
+            } else {
+                // Coach bot - makes reasonable moves
+                move = moves[Math.floor(Math.random() * moves.length)];
+            }
+            
+            // Make the move
+            game.move(move);
+            moveHistory.push(move);
+            
+            // Update board
+            board.position(game.fen());
+            updateMovesList();
+            updateGameStatus();
+            
+            //
